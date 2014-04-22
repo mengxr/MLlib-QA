@@ -19,7 +19,7 @@ resolvers +=
 
 resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
 
-libraryDependencies += "org.apache.spark" %% "spark-mllib" % "1.0.0" % "provided"
+libraryDependencies += "org.apache.spark" %% "spark-mllib" % "1.0.0-SNAPSHOT" % "provided"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 

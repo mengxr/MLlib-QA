@@ -1,17 +1,16 @@
 package mllib.qa
 
 import scopt.OptionParser
-
-import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.mllib.recommendation.{MatrixFactorizationModel, ALS, Rating}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.SparkContext._
-import org.apache.spark.serializer.{KryoSerializer, KryoRegistrator}
 import com.esotericsoftware.kryo.Kryo
 import org.apache.log4j.{Level, Logger}
 
+import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext._
+import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.serializer.KryoRegistrator
+
 case class ALSConfig(
-    master: String = "local[2]",
     input: String = null,
     numPartitions: Int = 2,
     rank: Int = 10)
@@ -22,6 +21,16 @@ class ALSRegistrator extends KryoRegistrator {
   }
 }
 
+/*
+ Commands to submit:
+
+ ../spark/bin/spark-submit target/scala-2.10/mllib-qa-assembly-0.1.jar --class mllib.qa.MovieLensALS
+   --master spark://ec2-54-221-139-69.compute-1.amazonaws.com:7077 --executor-memory 5g --num-executors 3
+   --arg --input --arg hdfs://ec2-54-221-139-69.compute-1.amazonaws.com:9000/tmp/ratings.dat
+   --arg --numPartitions --arg 8
+
+
+ */
 object MovieLensALS extends App {
 
   object TrainingMode extends Enumeration {
@@ -32,18 +41,18 @@ object MovieLensALS extends App {
   import TrainingMode._
 
   val parser = new OptionParser[ALSConfig]("MovieLensALS") {
-    opt[String]("master").action {
-      (x, c) =>
-        c.copy(master = x)
-    }.text("Spark master")
-    opt[String]("input").action {
-      (x, c) =>
-        c.copy(input = x)
-    }.text("input path").required()
     opt[Int]("numPartitions").action {
       (x, c) =>
         c.copy(numPartitions = x)
     }.text("number partitions")
+    opt[Int]("rank").action {
+      (x, c) =>
+        c.copy(rank = x)
+    }.text("rank")
+    arg[String]("input").action {
+      (x, c) =>
+        c.copy(input = x)
+    }
   }
 
   parser.parse(args, ALSConfig()).map {
@@ -51,14 +60,14 @@ object MovieLensALS extends App {
       println("Config: " + config) // TODO: use json pickle
 
       val conf = new SparkConf()
-        // .setMaster(config.master)
-        .setAppName("MovelensALS")
+        .setAppName("MovieLensALS")
+        // TODO: Kryo doesn't work with implicit ALS on YARN.
         // .setJars(SparkContext.jarOfClass(this.getClass))
         // .set("spark.serializer", classOf[KryoSerializer].getName)
-        .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
-        .set("spark.kryo.referenceTracking", "false")
-        .set("spark.kryoserializer.buffer.mb", "8")
-        .set("spark.locality.wait", "10000")
+        // .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
+        // .set("spark.kryo.referenceTracking", "false")
+        // .set("spark.kryoserializer.buffer.mb", "8")
+        // .set("spark.locality.wait", "10000")
       val sc = new SparkContext(conf)
 
       Logger.getRootLogger.setLevel(Level.WARN)
