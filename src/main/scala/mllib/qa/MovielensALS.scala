@@ -53,14 +53,14 @@ object MovieLensALS extends App {
       Logger.getRootLogger.setLevel(Level.WARN)
 
       val conf = new SparkConf()
-          .setMaster(config.master)
-          .setAppName("MovelensALS")
-          .setJars(SparkContext.jarOfClass(this.getClass))
-          .set("spark.serializer", classOf[KryoSerializer].getName)
-          .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
-          .set("spark.kryo.referenceTracking", "false")
-          .set("spark.kryoserializer.buffer.mb", "8")
-          .set("spark.locality.wait", "10000")
+        // .setMaster(config.master)
+        .setAppName("MovelensALS")
+        // .setJars(SparkContext.jarOfClass(this.getClass))
+        .set("spark.serializer", classOf[KryoSerializer].getName)
+        .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
+        .set("spark.kryo.referenceTracking", "false")
+        .set("spark.kryoserializer.buffer.mb", "8")
+        .set("spark.locality.wait", "10000")
       val sc = new SparkContext(conf)
 
       val ratings = sc.textFile(config.input).map {
