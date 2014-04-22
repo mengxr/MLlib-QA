@@ -8,10 +8,15 @@ resolvers += Resolver.sonatypeRepo("public")
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
-libraryDependencies += "org.apache.spark" %% "spark-mllib" % "1.0.0-SNAPSHOT"
+resolvers += 
+  "Spark 1.0 RC" at "https://repository.apache.org/content/repositories/orgapachespark-1010"
+
+resolvers += "Akka Repository" at "http://repo.akka.io/releases/"
+
+libraryDependencies += "org.apache.spark" %% "spark-mllib" % "1.0.0"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
-libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
+// libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
