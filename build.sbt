@@ -1,3 +1,9 @@
+import AssemblyKeys._
+
+assemblySettings
+
+assemblyOption in assembly ~= { _.copy(includeScala = false) }
+
 name := "mllib-qa"
 
 scalaVersion := "2.10.4"
