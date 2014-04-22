@@ -68,6 +68,8 @@ object BinaryClassification extends App {
       val sc = new SparkContext(conf)
 
       Logger.getRootLogger.setLevel(Level.WARN)
+      Logger.getLogger("com.github.fommil.netlib").setLevel(Level.ALL)
+      Logger.getLogger("com.github.fommil.jniloader").setLevel(Level.ALL)
 
       val examples = MLUtils.loadLibSVMData(sc, config.input).cache()
       val numExamples = examples.count()

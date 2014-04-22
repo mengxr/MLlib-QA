@@ -8,9 +8,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.serializer.KryoRegistrator
+import org.apache.spark.serializer.{KryoSerializer, KryoRegistrator}
 
 case class ALSConfig(
+    kryo: Boolean = false,
     input: String = null,
     numPartitions: Int = 2,
     rank: Int = 10)
@@ -49,6 +50,10 @@ object MovieLensALS extends App {
       (x, c) =>
         c.copy(rank = x)
     }.text("rank")
+    opt[Boolean]("kryo").action {
+      (x, c) =>
+        c.copy(kryo = x)
+    }
     arg[String]("input").action {
       (x, c) =>
         c.copy(input = x)
@@ -59,15 +64,14 @@ object MovieLensALS extends App {
     config =>
       println("Config: " + config) // TODO: use json pickle
 
-      val conf = new SparkConf()
-        .setAppName("MovieLensALS")
-        // TODO: Kryo doesn't work with implicit ALS on YARN.
-        // .setJars(SparkContext.jarOfClass(this.getClass))
-        // .set("spark.serializer", classOf[KryoSerializer].getName)
-        // .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
-        // .set("spark.kryo.referenceTracking", "false")
-        // .set("spark.kryoserializer.buffer.mb", "8")
-        // .set("spark.locality.wait", "10000")
+      val conf = new SparkConf().setAppName("MovieLensALS")
+      if (config.kryo) {
+        conf.set("spark.serializer", classOf[KryoSerializer].getName)
+          .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
+          .set("spark.kryo.referenceTracking", "false")
+          .set("spark.kryoserializer.buffer.mb", "8")
+          .set("spark.locality.wait", "10000")
+      }
       val sc = new SparkContext(conf)
 
       Logger.getRootLogger.setLevel(Level.WARN)
