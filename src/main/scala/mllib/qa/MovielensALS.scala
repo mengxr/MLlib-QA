@@ -16,7 +16,7 @@ case class ALSConfig(
     numPartitions: Int = 2,
     rank: Int = 10)
 
-private class ALSRegistrator extends KryoRegistrator {
+class ALSRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
     kryo.register(classOf[Rating])
   }
