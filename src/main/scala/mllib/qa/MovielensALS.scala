@@ -54,7 +54,7 @@ object MovieLensALS extends App {
         // .setMaster(config.master)
         .setAppName("MovelensALS")
         // .setJars(SparkContext.jarOfClass(this.getClass))
-        .set("spark.serializer", classOf[KryoSerializer].getName)
+        // .set("spark.serializer", classOf[KryoSerializer].getName)
         .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
         .set("spark.kryo.referenceTracking", "false")
         .set("spark.kryoserializer.buffer.mb", "8")
@@ -90,7 +90,7 @@ object MovieLensALS extends App {
         val model = train(mode, config)(training)
         timer.toc()
         val rmse = computeRmse(model, test, numTest)
-        println(s"Static explicit RMSE is $rmse.")
+        println(s"RMSE of $mode is $rmse.")
       }
 
       sc.stop()
