@@ -50,8 +50,6 @@ object MovieLensALS extends App {
     config =>
       println("Config: " + config) // TODO: use json pickle
 
-      Logger.getRootLogger.setLevel(Level.WARN)
-
       val conf = new SparkConf()
         // .setMaster(config.master)
         .setAppName("MovelensALS")
@@ -62,6 +60,8 @@ object MovieLensALS extends App {
         .set("spark.kryoserializer.buffer.mb", "8")
         .set("spark.locality.wait", "10000")
       val sc = new SparkContext(conf)
+
+      Logger.getRootLogger.setLevel(Level.WARN)
 
       val ratings = sc.textFile(config.input).map {
         line =>
@@ -87,7 +87,7 @@ object MovieLensALS extends App {
       for (mode <- TrainingMode.values) {
         val timer = new TicToc(mode.toString)
         timer.tic()
-        val model = train(mode)(training)
+        val model = train(mode, config)(training)
         timer.toc()
         val rmse = computeRmse(model, test, numTest)
         println(s"Static explicit RMSE is $rmse.")
@@ -100,25 +100,25 @@ object MovieLensALS extends App {
     System.exit(1)
   }
 
-  def train(mode: TrainingMode): RDD[Rating] => MatrixFactorizationModel = {
+  def train(mode: TrainingMode, config: ALSConfig): RDD[Rating] => MatrixFactorizationModel = {
     mode match {
     case Static =>
       (training: RDD[Rating]) =>
-        ALS.train(training, 10, 20, 1.0)
+        ALS.train(training, config.rank, 20, 1.0)
     case Builder =>
       (training: RDD[Rating]) =>
         new ALS()
-            .setRank(10)
+            .setRank(config.rank)
             .setIterations(20)
             .setLambda(1.0)
             .run(training)
     case StaticImplicit =>
       (training: RDD[Rating]) =>
-        ALS.trainImplicit(training, 10, 20, 1.0, 1.0)
+        ALS.trainImplicit(training, config.rank, 20, 1.0, 1.0)
     case BuilderImplicit =>
       (training: RDD[Rating]) =>
         new ALS()
-            .setRank(10)
+            .setRank(config.rank)
             .setIterations(20)
             .setLambda(1.0)
             .setImplicitPrefs(true)
