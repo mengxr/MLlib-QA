@@ -1,5 +1,8 @@
 package mllib.qa
 
+import scala.pickling._
+import scala.pickling.json._
+
 import scopt.OptionParser
 import com.esotericsoftware.kryo.{Serializer, Kryo}
 import org.apache.log4j.{Level, Logger}
@@ -103,7 +106,7 @@ object MovieLensALS extends App {
 
   parser.parse(args, ALSConfig()).map {
     config =>
-      println("Config: " + config) // TODO: use json pickle
+      println("Config: " + config.pickle) // TODO: use json pickle
 
       val conf = new SparkConf().setAppName("MovieLensALS")
       if (config.kryo) {

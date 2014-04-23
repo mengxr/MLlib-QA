@@ -27,7 +27,7 @@ libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
 libraryDependencies += "com.github.fommil.netlib" % "all" % "1.1.2"
 
-// libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
+libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
 
 TaskKey[Unit]("writeClasspath") <<= (baseDirectory, 
     externalDependencyClasspath in Compile,
