@@ -25,6 +25,14 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "1.9.1" % "test"
 
 libraryDependencies += "com.github.scopt" %% "scopt" % "3.2.0"
 
-// libraryDependencies += "com.github.fommil.netlib" % "all" % "1.1.2"
+libraryDependencies += "com.github.fommil.netlib" % "all" % "1.1.2"
 
 // libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
+
+TaskKey[Unit]("writeClasspath") <<= (baseDirectory, 
+    externalDependencyClasspath in Compile,
+    externalDependencyClasspath in Runtime, 
+    packagedArtifact in (Compile, packageBin)).map { (base, compileClasspath, runtimeClasspath, art) =>
+      IO.write(base / "target" / "runtimeClasspath", (runtimeClasspath.files.map(_.toString) :+ art._2.getAbsolutePath).mkString(","))
+      IO.write(base / "target" / "compileClasspath", (compileClasspath.files.map(_.toString) :+ art._2.getAbsolutePath).mkString(":"))
+    }

@@ -1,7 +1,7 @@
 package mllib.qa
 
 import scopt.OptionParser
-import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.{Serializer, Kryo}
 import org.apache.log4j.{Level, Logger}
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -9,6 +9,9 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.recommendation.{ALS, MatrixFactorizationModel, Rating}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.serializer.{KryoSerializer, KryoRegistrator}
+import org.jblas.DoubleMatrix
+import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.spark.broadcast.Broadcast
 
 case class ALSConfig(
     kryo: Boolean = false,
@@ -18,7 +21,45 @@ case class ALSConfig(
 
 class ALSRegistrator extends KryoRegistrator {
   override def registerClasses(kryo: Kryo) {
-    kryo.register(classOf[Rating])
+    kryo.register(classOf[Rating]) // , new Serializer[Rating]() {
+//      override def read(kryo: Kryo, input: Input, `type`: Class[Rating]): Rating = {
+//        Rating(input.readInt(), input.readInt(), input.readDouble())
+//      }
+//      override def write(kryo: Kryo, output: Output, `object`: Rating): Unit = {
+//        output.writeInt(`object`.user)
+//        output.writeInt(`object`.product)
+//        output.writeDouble(`object`.rating)
+//      }
+//    })
+
+    kryo.register(classOf[DoubleMatrix])
+//    kryo.register(classOf[DoubleMatrix], new Serializer[DoubleMatrix]() {
+//
+//      override def read(kryo: Kryo, input: Input, `type`: Class[DoubleMatrix]): DoubleMatrix = {
+//        val m = input.readInt()
+//        val n = input.readInt()
+//        val mat = new DoubleMatrix(m, n)
+//        val len = m * n
+//        val data = mat.data
+//        var i = 0
+//        while (i < len) {
+//          data(i) = input.readDouble()
+//          i += 1
+//        }
+//        mat
+//      }
+//
+//      override def write(kryo: Kryo, output: Output, `object`: DoubleMatrix): Unit = {
+//        val m = `object`.rows
+//        val n = `object`.columns
+//        val data = `object`.data
+//        output.writeInt(m)
+//        output.writeInt(n)
+//        data.foreach { x =>
+//          output.writeDouble(x)
+//        }
+//      }
+//    })
   }
 }
 
@@ -36,7 +77,7 @@ object MovieLensALS extends App {
 
   object TrainingMode extends Enumeration {
     type TrainingMode = Value
-    val Static, StaticImplicit, Builder, BuilderImplicit = Value
+    val StaticImplicit, Static, Builder, BuilderImplicit = Value
   }
 
   import TrainingMode._
@@ -68,9 +109,9 @@ object MovieLensALS extends App {
       if (config.kryo) {
         conf.set("spark.serializer", classOf[KryoSerializer].getName)
           .set("spark.kryo.registrator", classOf[ALSRegistrator].getName)
-          .set("spark.kryo.referenceTracking", "false")
-          .set("spark.kryoserializer.buffer.mb", "8")
-          .set("spark.locality.wait", "10000")
+          // .set("spark.kryo.referenceTracking", "false")
+          .set("spark.kryoserializer.buffer.mb", "32")
+          // .set("spark.locality.wait", "10000")
       }
       val sc = new SparkContext(conf)
 
