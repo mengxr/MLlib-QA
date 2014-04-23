@@ -1,3 +1,5 @@
+import sbt.Keys
+
 import AssemblyKeys._
 
 assemblySettings
@@ -29,10 +31,12 @@ libraryDependencies += "com.github.fommil.netlib" % "all" % "1.1.2"
 
 libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
 
-TaskKey[Unit]("writeClasspath") <<= (baseDirectory, 
-    externalDependencyClasspath in Compile,
-    externalDependencyClasspath in Runtime, 
-    packagedArtifact in (Compile, packageBin)).map { (base, compileClasspath, runtimeClasspath, art) =>
-      IO.write(base / "target" / "runtimeClasspath", (runtimeClasspath.files.map(_.toString) :+ art._2.getAbsolutePath).mkString(","))
-      IO.write(base / "target" / "compileClasspath", (compileClasspath.files.map(_.toString) :+ art._2.getAbsolutePath).mkString(":"))
-    }
+exportJars := true
+
+Keys.`package` <<=
+  (baseDirectory, dependencyClasspath in Compile, packagedArtifact in (Compile, packageBin), dependencyClasspath in Runtime, Keys.`package` in Compile).map {
+    (base, ccp, art, rcp, p) =>
+    IO.write(base / "target" / "sparkClasspath", (art._2.getAbsolutePath +: ccp.files).mkString(":"))
+    IO.write(base / "target" / "sparkJars", rcp.files.mkString(","))
+    p
+  }
