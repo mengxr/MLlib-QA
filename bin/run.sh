@@ -1,0 +1,1 @@
+CLASSPATH=$(cat target/sparkClasspath) ../spark/bin/spark-submit target/scala-2.10/mllib-qa_2.10-0.1.jar --jars $(cat target/sparkJars) --num-executors 2 --executor-cores 4 --executor-memory 4000M --master yarn-cluster --class mllib.qa.MovieLensALS --arg /user/ec2-user/ratings.dat --arg --numPartitions --arg 8
