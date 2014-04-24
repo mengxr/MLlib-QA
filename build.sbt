@@ -34,7 +34,7 @@ libraryDependencies += "org.scala-lang" %% "scala-pickling" % "0.8.0-SNAPSHOT"
 exportJars := true
 
 Keys.`package` <<=
-  (baseDirectory, dependencyClasspath in Compile, packagedArtifact in (Compile, packageBin), dependencyClasspath in Runtime, Keys.`package` in Compile).map {
+  (baseDirectory, dependencyClasspath in Compile, packagedArtifact in (Compile, packageBin), externalDependencyClasspath in Runtime, Keys.`package` in Compile).map {
     (base, ccp, art, rcp, p) =>
     IO.write(base / "target" / "sparkClasspath", (art._2.getAbsolutePath +: ccp.files).mkString(":"))
     IO.write(base / "target" / "sparkJars", rcp.files.mkString(","))
